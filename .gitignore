@@ -1,0 +1,7 @@
+# Скрываем наши секреты
+Secrets.xcconfig
+
+# Скрываем мусор Xcode
+DerivedData/
+*.xcuserdata
+.DS_Store
