@@ -6,12 +6,19 @@
 //
 import Foundation
 
-class NetworkManager {
+protocol NetworkManagerProtocol {
+    func getTopHeadlines(pageSize: Int, page: Int) async throws -> Response
+}
+
+class NetworkManager : NetworkManagerProtocol {
     let url = "https://newsapi.org"
-    let apiKey = "099efdbdf1544a39b40d784565e17358"
+    let apiKey = Bundle.main.object(forInfoDictionaryKey: "API_KEY") as? String
     let path = "/v2/top-headlines"
     
-    func getTopHeadlines(pageSize: Int, page: Int, completion: @escaping (Response) -> Void) {
+    func getTopHeadlines(pageSize: Int, page: Int) async throws -> Response {
+        
+        guard apiKey != nil else { throw URLError(.badURL) }
+        
         var urlComponents = URLComponents(string: "\(url)\(path)")
         urlComponents?.queryItems = [
             URLQueryItem(name: "apiKey", value: apiKey),
@@ -20,37 +27,14 @@ class NetworkManager {
             URLQueryItem(name: "page", value: "\(page)")
         ]
      
-        guard let url = urlComponents?.url else { return }
-        
-        print("\(url.absoluteString)")
-        
+        guard let url = urlComponents?.url else { return Response(status: .error, articles: nil, message: "Invalid URL") }
+                
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            guard error == nil else {
-                print("Error: \(error!.localizedDescription)")
-                return
-            }
-            
-            guard let data else { return }
-                                                
-            Task { @MainActor in
-                do {
-                    let result: Response = try JSONDecoder().decode(Response.self, from: data)
-                    
-                    if result.status == .error {
-                        print("Error: \(result.message ?? "Unknown error")")
-                        return
-                    } else if result.status == .ok {
-                        completion(result)
-                    }
-                    
-                } catch {
-                    print(error.localizedDescription)
-                }
-            }
-        }.resume()
+        let (data, _) = try await URLSession.shared.data(for: request)
+        
+        return try JSONDecoder().decode(Response.self, from: data)
     }
 }
 

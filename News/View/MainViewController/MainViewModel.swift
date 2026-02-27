@@ -46,19 +46,3 @@ class MainViewModel: MainViewModelProtocol {
         articles
     }
 }
-
-//func updateData(page: Int = 1) {
-//    networkService.getTopHeadlines(pageSize: 10, page: page) { response in
-//    
-//        let startIndex = self.articles.count
-//        
-//        if let articles = response.articles {
-//            self.articles.append(contentsOf: articles)
-//        }
-//        
-//        self.tableView.insertRows(
-//            at: (startIndex..<self.articles.count).map { IndexPath(row: $0, section: 0)},
-//            with: .automatic
-//        )
-//    }
-//}
